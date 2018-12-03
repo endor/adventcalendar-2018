@@ -45,39 +45,18 @@
 // +7, +7, -2, -7, -4 first reaches 14 twice.
 
 use std::fs;
-use std::thread;
+use std::collections::HashSet;
 
-// 595
-fn calculate_final_frequency(frequency: i32, changes: &[i32]) -> i32 {
-    match changes.get(0) {
-        Some(value) => frequency + value + calculate_final_frequency(frequency, &changes[1..]),
-        None        => frequency,
-    }
-}
+fn find_frequency_used_twice(changes: &[i32]) -> i32 {
+    let mut frequency = 0;
+    let mut seen = HashSet::new();
 
-// 80598
-fn find_frequency_used_twice(
-    frequency: i32,
-    current_changes: &[i32],
-    all_changes: &[i32],
-    mut seen_frequencies: Vec<i32>
-) -> i32 {
-    match current_changes.get(0) {
-        Some(value) => {
-            let new_frequency = frequency + value;
+    changes.iter().cycle().find(|&&change| {
+        frequency = frequency + change;
+        seen.replace(frequency).is_some()
+    });
 
-            if seen_frequencies.contains(&new_frequency) {
-                println!("Found: {}", new_frequency);
-                new_frequency
-            } else {
-                seen_frequencies.push(new_frequency);
-                find_frequency_used_twice(new_frequency, &current_changes[1..], &all_changes, seen_frequencies)
-            }
-        }
-        None        => {
-            find_frequency_used_twice(frequency, &all_changes, &all_changes, seen_frequencies)
-        }
-    }
+    frequency
 }
 
 fn main() {
@@ -88,10 +67,11 @@ fn main() {
         .map(|item| item.parse::<i32>().unwrap_or(0))
         .collect();
 
-    let final_frequency = calculate_final_frequency(0, &changes);
+    // 595
+    let final_frequency: i32 = changes.iter().sum();
     println!("Final frequency: {}", final_frequency);
 
-    thread::Builder::new().stack_size(72 * 1024 * 1024).spawn(move || {
-        find_frequency_used_twice(0, &changes, &changes, [0].to_vec());
-    }).unwrap().join().unwrap();
+    // 80598
+    let used_twice = find_frequency_used_twice(&changes);
+    println!("Frequency used twice: {}", used_twice);
 }
