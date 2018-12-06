@@ -1,0 +1,8 @@
+[package]
+name = "day04"
+version = "0.1.0"
+authors = ["Frank Prößdorf <frank@naa.li>"]
+
+[dependencies]
+itertools = "0.7.11"
+regex = "1"
